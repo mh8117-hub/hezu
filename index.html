@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>合租生活管家</title>
+<meta name="description" content="合租生活管家：房租水电 AA 分摊、清洁值日排班、公共物品登记提醒、室友公约管理。">
+<meta name="theme-color" content="#E4EAE4">
+<style>
+:root{
+  --bg:#EDF1EC;--side:#E4EAE4;--panel:#FFFFFF;--ink:#1F2D2A;--muted:#66756F;--line:#D9E1DB;
+  --green:#2E6B57;--green-soft:#DCEBE3;--alert:#C93C55;--alert-soft:#F8E1E5;--amber:#8A5A12;--amber-soft:#FBEFD9;
+  --note:#FFE38A;--r:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC",sans-serif;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.app{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;height:100vh;padding:22px 16px;background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:18px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;padding:0 6px}
+.brand svg{width:26px;height:26px}
+.house{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.house h2{margin:0;font-size:15px}
+.house p{margin:2px 0 10px;color:var(--muted);font-size:13px}
+.avs{display:flex;gap:6px;flex-wrap:wrap}
+.av{width:30px;height:30px;border-radius:50%;display:inline-grid;place-items:center;color:#fff;font-size:13px;font-weight:700;flex:none;line-height:1}
+.av.sm{width:24px;height:24px;font-size:11px}
+.av.anon{background:#8C9A94}
+.av.me{box-shadow:0 0 0 2px var(--panel),0 0 0 4px var(--ink)}
+nav{display:flex;flex-direction:column;gap:2px}
+nav a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;text-decoration:none;font-weight:600;color:var(--ink)}
+nav a:hover{background:rgba(31,45,42,.06)}
+nav a.on{background:var(--ink);color:#fff}
+nav svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round;flex:none}
+nav .badge{margin-left:auto;background:var(--alert);color:#fff;border-radius:99px;font-size:11px;font-style:normal;padding:0 7px;line-height:18px}
+nav .badge:empty{display:none}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:4px}
+.lnk{background:none;border:0;text-align:left;padding:6px 12px;color:var(--muted);cursor:pointer;font-size:13px;border-radius:8px}
+.lnk:hover{color:var(--ink);background:rgba(31,45,42,.06)}
+main{padding:28px 36px 80px;max-width:1120px;width:100%}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+h1{font-size:27px;margin:0;font-weight:800;line-height:1.25}
+.sub{color:var(--muted);margin:4px 0 0}
+.who{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.who select{border:1px solid var(--line);background:var(--panel);border-radius:99px;padding:5px 12px;font-weight:700;color:var(--ink);cursor:pointer}
+.who .lnk{padding:5px 10px;border:1px solid var(--line);border-radius:99px;background:var(--panel)}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px}
+.card h3{margin:0 0 10px;font-size:16px}
+a.card{text-decoration:none;display:block}
+a.card:hover{border-color:#B9C6BE}
+.tip{display:flex;align-items:flex-start;gap:12px;background:var(--panel);border:1px dashed #A9BDB2;border-radius:12px;padding:10px 14px;margin-bottom:18px;font-size:14px}
+.tip span{flex:1}
+.x{background:none;border:0;font-size:20px;line-height:1;cursor:pointer;color:var(--muted);padding:0 4px}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:7px 14px;cursor:pointer;font-weight:600;white-space:nowrap}
+.btn:hover{border-color:#AFC0B6}
+.btn.pri{background:var(--green);border-color:var(--green);color:#fff}
+.btn.pri:hover{background:#255847}
+.btn.sm{padding:4px 11px;font-size:13px}
+.btn.ghost{background:transparent}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.icon-btn{background:none;border:0;color:#A0ADA7;font-size:18px;cursor:pointer;padding:2px 6px;border-radius:6px}
+.icon-btn:hover{color:var(--alert);background:var(--alert-soft)}
+.tag{display:inline-block;font-size:12px;padding:1px 9px;border-radius:99px;background:#EEF2EF;color:var(--muted);white-space:nowrap;font-weight:600}
+.tag.ok{background:var(--green-soft);color:var(--green)}
+.tag.warn{background:var(--amber-soft);color:var(--amber)}
+.tag.bad{background:var(--alert-soft);color:var(--alert)}
+.sec{font-size:17px;margin:30px 0 12px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.sec small{font-weight:400;color:var(--muted);font-size:13px}
+.row{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.grow{flex:1;min-width:0}
+.empty{color:var(--muted);margin:6px 0}
+.bar-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.bar-actions p{margin:0;font-size:14px}
+.bar-actions .btn{margin-left:auto}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:16px}
+.track{height:8px;background:#E9EEEA;border-radius:99px;overflow:hidden}
+.track i{display:block;height:100%;background:var(--green);border-radius:99px}
+.track i.low{background:var(--alert)}
+
+/* 冰箱门 */
+.fridge{position:relative;background:linear-gradient(180deg,#FAFCFA,#EEF3EF);border:1px solid #CFD9D2;border-radius:24px;padding:24px 64px 30px 26px}
+.fridge::after{content:"";position:absolute;right:22px;top:36px;bottom:36px;width:9px;border-radius:9px;background:linear-gradient(90deg,#C3CEC7,#DCE4DE)}
+.fr-head{display:flex;align-items:baseline;gap:12px;margin-bottom:22px;flex-wrap:wrap}
+.fr-head h2{margin:0;font-size:18px}
+.notes{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:26px 22px}
+.note{position:relative;background:var(--note);color:#4A3B00;padding:22px 16px 14px;border-radius:3px;min-height:138px;display:flex;flex-direction:column;transform:rotate(var(--rot));box-shadow:0 12px 18px -14px rgba(50,40,0,.55),0 1px 0 rgba(0,0,0,.05)}
+.note::before{content:"";position:absolute;top:-9px;left:50%;width:18px;height:18px;margin-left:-9px;border-radius:50%;background:var(--mag);box-shadow:inset 0 -3px 0 rgba(0,0,0,.22),0 2px 3px rgba(0,0,0,.25)}
+.note.mint{background:#CDEBDD;color:#123B2C}
+.note.pink{background:#FFD5DC;color:#5A1422}
+.note.blue{background:#D8E5FF;color:#14295A}
+.note h4{margin:0 0 6px;font-size:15px;line-height:1.4}
+.note p{margin:0;font-size:13px;flex:1;opacity:.88}
+.nb{margin-top:12px;align-self:flex-start;background:rgba(20,25,24,.82);color:#fff;border:0;border-radius:99px;padding:4px 13px;font-size:12px;font-weight:600;cursor:pointer}
+.nb:hover{background:#000}
+.intro .note{animation:stick .55s cubic-bezier(.2,.9,.3,1.25) both}
+@keyframes stick{from{opacity:0;transform:translateY(-16px) rotate(0deg) scale(.95)}to{opacity:1;transform:rotate(var(--rot))}}
+.tri{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:22px}
+.big{font-size:28px;font-weight:800;margin:0;line-height:1.2}
+.big small{font-size:14px;font-weight:600;color:var(--muted)}
+.pos{color:var(--green)}.neg{color:var(--alert)}
+.mini{list-style:none;margin:0;padding:0}
+.mini li{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:14px}
+.mini li span:nth-child(2){flex:1}
+.feed .row{font-size:14px}
+.feed time{color:var(--muted);font-size:12px;white-space:nowrap;margin-left:auto}
+.ft{flex:1;min-width:0}
+
+/* 账本 */
+.bal{display:grid;grid-template-columns:88px 1fr 1fr 100px;align-items:center;gap:6px;padding:7px 0}
+.bal .bn,.fair .bn{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600}
+.bal.me .bn::after{content:"我";font-size:11px;background:var(--ink);color:#fff;border-radius:4px;padding:0 4px}
+.neg-side,.pos-side{height:14px;display:flex}
+.neg-side{justify-content:flex-end;border-right:2px solid var(--ink)}
+.neg-side i{background:var(--alert);border-radius:4px 0 0 4px}
+.pos-side i{background:var(--green);border-radius:0 4px 4px 0}
+.bv{text-align:right;font-weight:700;font-size:14px}
+.plan{list-style:none;margin:8px 0 0;padding:0}
+.plan li{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.plan li:first-child{border-top:0}
+.plan li span{flex:1}
+.plan li.mine{background:linear-gradient(90deg,var(--green-soft),transparent);margin:0 -12px;padding:10px 12px;border-radius:10px}
+.cat{display:grid;grid-template-columns:72px 1fr 90px;gap:10px;align-items:center;padding:6px 0;font-size:14px}
+.cat b{text-align:right}
+.exp .ei{flex:1;min-width:0}
+.exp .ei b{margin-right:8px}
+.exp .ea{text-align:right}
+.exp.set{background:#F7FAF8;margin:0 -20px;padding:11px 20px}
+.weights{margin:12px 0 0;font-size:13px;color:var(--muted)}
+
+/* 值日 */
+.rule-line{margin:0 0 16px;color:var(--muted);font-size:14px}
+.chores{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:16px}
+.chore{display:flex;flex-direction:column}
+.chore.done{background:#F6FAF7}
+.ch-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.ch-top h3{margin:0;font-size:15px}
+.ch-top p{margin:0}
+.ch-top .tag{margin-left:auto}
+.std{font-size:13px;margin:4px 0 12px;flex:1;color:#3E4E49}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.scroll{overflow-x:auto}
+.sched{width:100%;border-collapse:collapse;font-size:13px}
+.sched th,.sched td{text-align:left;padding:8px 6px;border-top:1px solid var(--line);white-space:nowrap}
+.sched th{border-top:0;color:var(--muted);font-weight:600}
+.sched td .av{vertical-align:middle;margin-right:4px}
+.sched tr.now td{font-weight:700}
+.sched td.mine{background:var(--green-soft)}
+.fair{display:grid;grid-template-columns:88px 1fr 44px 92px;gap:10px;align-items:center;padding:6px 0}
+.fair b{text-align:right;font-size:14px}
+
+/* 物品 */
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.item{display:flex;flex-direction:column;gap:6px}
+.item.bad{border-color:#EBB6C0}
+.item.warn{border-color:#EBD3A6}
+.it-top{display:flex;justify-content:space-between;align-items:center}
+.it-top h3{margin:0}
+.stock{margin:0}
+.stock b{font-size:24px}
+.item.bad .track i{background:var(--alert)}
+.item.warn .track i{background:#D69E2E}
+.turn{display:flex;align-items:center;gap:6px;margin:4px 0 0}
+.item p{margin:0}
+.item .acts{margin-top:8px}
+
+/* 公约 */
+.votes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.vote .rtext{font-size:16px;font-weight:700;margin:8px 0 4px}
+.sigs{display:flex;gap:4px}
+.sig{opacity:.22;filter:grayscale(1)}
+.sig.on{opacity:1;filter:none}
+.vote .sigs{margin:8px 0 12px}
+.rcat{padding:6px 0}
+.rcat+.rcat{border-top:1px solid var(--line);margin-top:6px;padding-top:12px}
+.rcat h4{margin:0 0 2px;font-size:13px;color:var(--muted)}
+.rule .rtext{margin:0;font-size:15px}
+.rule{border-top:0;padding:8px 0}
+
+/* 弹窗 */
+.mask{position:fixed;inset:0;background:rgba(20,30,27,.45);display:grid;place-items:center;z-index:50;padding:16px}
+.modal{background:var(--panel);border-radius:18px;width:min(540px,100%);max-height:90vh;overflow:auto;padding:22px 22px 18px}
+.modal h3{margin:0 0 12px;font-size:18px}
+.modal .acts{justify-content:flex-end;margin-top:18px}
+.modal p{margin:6px 0}
+label.f{display:block;margin:12px 0 5px;font-size:13px;color:var(--muted);font-weight:600}
+.in{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--panel)}
+textarea.in{min-height:80px;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.chk{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:99px;padding:5px 12px;cursor:pointer;font-size:14px}
+.chk.block{display:flex;border-radius:12px;padding:8px 12px;margin:6px 0}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{border:1px dashed #A9BDB2;background:#F6F9F7;border-radius:99px;padding:3px 11px;font-size:12px;cursor:pointer}
+.chip:hover{border-style:solid}
+.preview{margin-top:14px;background:#F4F7F5;border-radius:12px;padding:10px 14px;font-size:14px}
+.preview div{display:flex;justify-content:space-between;padding:2px 0}
+.about table{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
+.about td{padding:8px 6px;border-top:1px solid var(--line);vertical-align:top}
+.about td:first-child{color:var(--muted);width:42%}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:99px;z-index:60;font-size:14px;max-width:calc(100% - 32px);text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+
+@media (max-width:1100px){.chores{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:860px){.grid2,.tri,.votes{grid-template-columns:1fr}}
+@media (max-width:760px){
+  .app{grid-template-columns:1fr}
+  .side{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;z-index:20;padding:6px 6px calc(6px + env(safe-area-inset-bottom));border-right:0;border-top:1px solid var(--line);flex-direction:row}
+  .brand,.house,.side-foot{display:none}
+  nav{flex-direction:row;width:100%;justify-content:space-around;gap:0}
+  nav a{flex-direction:column;gap:2px;font-size:11px;padding:6px 4px;position:relative;flex:1;align-items:center}
+  nav .badge{position:absolute;top:2px;left:calc(50% + 6px);margin:0}
+  main{padding:18px 16px 100px}
+  h1{font-size:23px}
+  .fridge{padding:20px 18px 24px;border-radius:18px}
+  .fridge::after{display:none}
+  .notes{grid-template-columns:1fr 1fr;gap:20px 14px}
+  .chores{grid-template-columns:1fr}
+  .bal{grid-template-columns:76px 1fr 1fr 88px}
+  .fair{grid-template-columns:76px 1fr 40px}
+  .fair>span:last-child{display:none}
+  .exp.set{margin:0 -20px}
+  .toast{bottom:88px}
+}
+@media (max-width:420px){.notes{grid-template-columns:1fr}.two{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.intro .note{animation:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="3" width="26" height="26" rx="8" fill="#1F2D2A"/><path d="M9 16l7-6 7 6v7h-4.5v-4.5h-5V23H9z" fill="#FFE38A"/></svg>
+      合租生活管家
+    </div>
+    <div class="house" id="house"></div>
+    <nav aria-label="主导航">
+      <a href="#/home" data-r="home"><svg viewBox="0 0 24 24"><path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM5 10h14M8.5 5.5v2M8.5 13v3"/></svg><span>冰箱门</span><em class="badge" id="bd-home"></em></a>
+      <a href="#/money" data-r="money"><svg viewBox="0 0 24 24"><path d="M4 7.5h15a1.5 1.5 0 0 1 1.5 1.5v9.5A1.5 1.5 0 0 1 19 20H5.5A1.5 1.5 0 0 1 4 18.5zM4 7.5l11-3.5v3.5M16.5 14h.01"/></svg><span>账本</span><em class="badge" id="bd-money"></em></a>
+      <a href="#/chores" data-r="chores"><svg viewBox="0 0 24 24"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4M9 15l2 2 4-4"/></svg><span>值日</span><em class="badge" id="bd-chores"></em></a>
+      <a href="#/items" data-r="items"><svg viewBox="0 0 24 24"><path d="M3.5 8L12 3.5 20.5 8v8L12 20.5 3.5 16zM3.5 8L12 12.5 20.5 8M12 12.5v8"/></svg><span>公共物品</span><em class="badge" id="bd-items"></em></a>
+      <a href="#/rules" data-r="rules"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6zM14.5 3v4.5H19M9 12h7M9 16h4"/></svg><span>室友公约</span><em class="badge" id="bd-rules"></em></a>
+    </nav>
+    <div class="side-foot">
+      <button class="lnk" data-act="about">设计说明</button>
+      <button class="lnk" data-act="reset">重置演示数据</button>
+    </div>
+  </aside>
+  <main id="main"><noscript>请开启 JavaScript 以使用合租生活管家。</noscript></main>
+</div>
+<script>
+(function(){
+'use strict';
+var KEY='hezu-guanjia-v1', DAY=864e5, S, toastT;
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function uid(){return Math.random().toString(36).slice(2,9)}
+function pd(s){return new Date(s+'T00:00:00')}
+function today0(){var d=new Date();d.setHours(0,0,0,0);return d}
+function addDays(d,n){var x=new Date(d);x.setDate(x.getDate()+n);return x}
+function monday(d){var x=new Date(d);x.setHours(0,0,0,0);x.setDate(x.getDate()-((x.getDay()+6)%7));return x}
+function iso(d){var z=function(n){return String(n).padStart(2,'0')};return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())}
+function md(d){return (d.getMonth()+1)+'月'+d.getDate()+'日'}
+var WK='日一二三四五六';
+function cents(y){return Math.round(Number(y)*100)}
+function yen(c){var v=Math.abs(c)/100;return '¥'+(Number.isInteger(v)?v.toLocaleString('zh-CN'):v.toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2}))}
+function rel(t){var s=(Date.now()-t)/1000;if(s<60)return '刚刚';if(s<3600)return Math.floor(s/60)+' 分钟前';if(s<86400)return Math.floor(s/3600)+' 小时前';var d=Math.floor(s/86400);return d<30?d+' 天前':md(new Date(t))}
+function tsAgo(h){return Date.now()-h*3600e3}
+
+/* ---------- 演示数据 ---------- */
+function seed(){
+  var t=today0(), cur=6, start=addDays(monday(t),-7*cur), ago=function(d){return iso(addDays(t,-d))};
+  var m1st=new Date(t.getFullYear(),t.getMonth(),1), mon=t.getMonth()+1, prev=mon===1?12:mon-1;
+  var order=['m1','m2','m3','m4'];
+  var areas=[
+    {id:'a1',name:'厨房',std:'灶台无油渍、水槽无残渣、厨余垃圾清空'},
+    {id:'a2',name:'公共卫生间',std:'马桶、洗手台、地面清洁，补充洗手液'},
+    {id:'a3',name:'客厅与走廊',std:'扫地加拖地，沙发、茶几物品归位'},
+    {id:'a4',name:'垃圾与回收',std:'周一、三、五晚倒垃圾，纸箱压扁分类'}
+  ];
+  var log=[];
+  for(var w=0;w<=cur;w++){areas.forEach(function(a,i){
+    var who=order[(i+w)%4];
+    if(w===cur){ if(a.id==='a1')log.push({a:a.id,w:w,by:who,at:tsAgo(46)}); if(a.id==='a4')log.push({a:a.id,w:w,by:who,at:tsAgo(2)}); return; }
+    if(w===cur-1&&who==='m2')return;
+    var by=(w===2&&who==='m4')?'m3':who, d=addDays(start,w*7+i+2);d.setHours(20,30,0,0);
+    log.push({a:a.id,w:w,by:by,at:d.getTime()});
+  })}
+  return {
+    v:1, me:'m1', tipClosed:false,
+    house:{name:'幸福里 7 号楼 702',meta:'4 人合租 · 第 8 个月'},
+    members:[
+      {id:'m1',name:'小林',room:'主卧（带阳台）',weight:1.3,color:'#2E6B57'},
+      {id:'m2',name:'阿杰',room:'次卧 A（朝南）',weight:1.0,color:'#3B6FD4'},
+      {id:'m3',name:'小雨',room:'次卧 B',weight:1.0,color:'#B8456F'},
+      {id:'m4',name:'大鹏',room:'小次卧',weight:0.7,color:'#B9770E'}
+    ],
+    bills:[
+      {id:'b1',name:'房租',amount:8800,day:1,payer:'m1',split:'weight',cat:'房租'},
+      {id:'b2',name:'宽带',amount:100,day:20,payer:'m4',split:'equal',cat:'网费'}
+    ],
+    expenses:[
+      {id:'e1',bill:'b1',title:'房租 · '+mon+'月',amount:8800,payer:'m1',cat:'房租',date:iso(m1st),split:'weight',parts:order.slice(),note:'房东只收一个人的转账'},
+      {id:'e2',title:prev+'月电费',amount:286.4,payer:'m2',cat:'水电燃气',date:ago(10),split:'equal',parts:order.slice()},
+      {id:'e3',title:prev+'月燃气费',amount:132,payer:'m3',cat:'水电燃气',date:ago(9),split:'equal',parts:order.slice()},
+      {id:'e4',title:'超市 · 卫生纸和洗洁精',amount:89.6,payer:'m3',cat:'日用品',date:ago(8),split:'equal',parts:order.slice()},
+      {id:'e5',title:prev+'月水费',amount:64.8,payer:'m1',cat:'水电燃气',date:ago(6),split:'equal',parts:order.slice()},
+      {id:'e6',title:'周末火锅',amount:368,payer:'m2',cat:'聚餐',date:ago(5),split:'equal',parts:['m1','m2','m3'],note:'大鹏出差没去'}
+    ],
+    settles:[
+      {id:'s1',from:'m4',to:'m1',amount:1540,date:ago(12)},
+      {id:'s2',from:'m3',to:'m1',amount:2200,date:ago(9)}
+    ],
+    chores:{start:iso(start),order:order.slice(),areas:areas,log:log,swaps:[]},
+    items:[
+      {id:'i1',name:'卫生纸',unit:'卷',stock:3,th:4,turn:'m2',lastBy:'m3',lastAt:ago(8),price:39.9},
+      {id:'i2',name:'洗洁精',unit:'瓶',stock:1,th:1,turn:'m3',lastBy:'m2',lastAt:ago(21),price:15.9},
+      {id:'i3',name:'洗衣液',unit:'瓶',stock:0,th:1,turn:'m1',lastBy:'m4',lastAt:ago(30),price:49.9},
+      {id:'i4',name:'垃圾袋',unit:'卷',stock:5,th:2,turn:'m4',lastBy:'m1',lastAt:ago(14),price:19.8},
+      {id:'i5',name:'桶装水',unit:'桶',stock:2,th:1,turn:'m2',lastBy:'m2',lastAt:ago(4),price:36},
+      {id:'i6',name:'厨房纸',unit:'卷',stock:4,th:2,turn:'m3',lastBy:'m1',lastAt:ago(17),price:22.5},
+      {id:'i7',name:'抽纸',unit:'包',stock:6,th:3,turn:'m4',lastBy:'m3',lastAt:ago(11),price:29.9}
+    ],
+    rules:[
+      {id:'r1',cat:'作息',text:'工作日 23:00 后公共区域保持安静，外放请戴耳机',status:'active',by:'m1',agrees:order.slice()},
+      {id:'r2',cat:'卫生',text:'厨房用完 2 小时内清洗锅碗，不留过夜',status:'active',by:'m3',agrees:order.slice()},
+      {id:'r3',cat:'访客',text:'留宿访客提前 1 天在群里说，同一访客每月不超过 4 晚',status:'active',by:'m2',agrees:order.slice()},
+      {id:'r4',cat:'费用',text:'账本里的账单 7 天内结清，垫付超过 500 元可随时发起结算',status:'active',by:'m1',agrees:order.slice()},
+      {id:'r5',cat:'公共物品',text:'用掉最后一个的人，顺手在管家里点“用掉一个”',status:'active',by:'m4',agrees:order.slice()},
+      {id:'r6',cat:'冰箱',text:'冰箱每人一层，公共层只放调料，周日清理过期食物',status:'active',by:'m3',agrees:order.slice()},
+      {id:'r7',cat:'费用',text:'空调季电费按各房间独立电表读数分摊',status:'voting',by:'m2',agrees:['m2','m4']},
+      {id:'r8',cat:'公共区域',text:'每月第一个周六一起大扫除，结束后聚餐 AA',status:'voting',by:'m3',agrees:['m3','m2','m4']}
+    ],
+    nudges:[{id:'n1',rule:'r2',at:tsAgo(20)}],
+    feed:[
+      {at:tsAgo(2),who:'m2',text:'完成了「垃圾与回收」值日打卡'},
+      {at:tsAgo(20),who:null,text:'有室友匿名提醒大家注意「厨房用完 2 小时内清洗锅碗，不留过夜」'},
+      {at:tsAgo(46),who:'m3',text:'完成了「厨房」值日打卡'},
+      {at:tsAgo(62),who:'m4',text:'同意了公约提议「每月第一个周六一起大扫除，结束后聚餐 AA」'},
+      {at:tsAgo(75),who:'m2',text:'提议新公约「空调季电费按各房间独立电表读数分摊」'},
+      {at:tsAgo(5*24+3),who:'m2',text:'记了一笔「周末火锅」¥368，3 人均分'},
+      {at:tsAgo(6*24+5),who:'m1',text:'记了一笔「'+prev+'月水费」¥64.8'},
+      {at:tsAgo(8*24+2),who:'m3',text:'补货了卫生纸和洗洁精，¥89.6 已记入账本'},
+      {at:tsAgo(9*24+1),who:'m3',text:'向 小林 转账 ¥2,200，已结清'},
+      {at:tsAgo(12*24+4),who:'m4',text:'向 小林 转账 ¥1,540，已结清'}
+    ]
+  };
+}
+
+function load(){try{var r=localStorage.getItem(KEY);if(r){S=JSON.parse(r);if(S&&S.v===1)return}}catch(e){}S=seed()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+/* ---------- 通用 ---------- */
+function M(id){for(var i=0;i<S.members.length;i++)if(S.members[i].id===id)return S.members[i];return {id:id,name:'?',color:'#999',weight:1}}
+function av(id,cls){var m=M(id);return '<span class="av '+(cls||'')+'" style="background:'+m.color+'" title="'+esc(m.name+(m.room?' · '+m.room:''))+'">'+esc(m.name.slice(-1))+'</span>'}
+function addFeed(who,text){S.feed.unshift({at:Date.now(),who:who,text:text});S.feed=S.feed.slice(0,60)}
+function toast(msg){var t=$('.toast');if(!t){t=document.createElement('div');t.className='toast';t.setAttribute('role','status');document.body.appendChild(t)}t.textContent=msg;t.style.display='block';clearTimeout(toastT);toastT=setTimeout(function(){t.style.display='none'},2600)}
+var CH=function(){return S.chores};
+function weekStart(w){return addDays(pd(CH().start),w*7)}
+function curW(){return Math.round((monday(today0())-pd(CH().start))/(7*DAY))}
+function assignee(i,w){var a=CH().areas[i],sw=null;CH().swaps.forEach(function(s){if(s.w===w&&s.a===a.id)sw=s});if(sw)return sw.to;var o=CH().order,n=o.length;return o[((i+w)%n+n)%n]}
+function doneRec(aid,w){for(var i=0;i<CH().log.length;i++){var l=CH().log[i];if(l.a===aid&&l.w===w)return l}return null}
+function nextOf(id){var o=CH().order;return o[(o.indexOf(id)+1)%o.length]}
+function itemStatus(it){return it.stock<=0?['已用完','bad']:it.stock<=it.th?['快用完','warn']:['充足','ok']}
+
+/* ---------- 账本计算 ---------- */
+function shares(e){
+  var total=cents(e.amount),ps=e.parts,w=ps.map(function(id){return e.split==='weight'?Math.round(M(id).weight*100):100}),W=w.reduce(function(a,b){return a+b},0);
+  var base=w.map(function(x){return Math.floor(total*x/W)}),rem=total-base.reduce(function(a,b){return a+b},0),out={};
+  ps.forEach(function(id,i){out[id]=base[i]+(i<rem?1:0)});return out;
+}
+function balances(){var b={};S.members.forEach(function(m){b[m.id]=0});
+  S.expenses.forEach(function(e){var sh=shares(e);b[e.payer]=(b[e.payer]||0)+cents(e.amount);for(var k in sh)b[k]=(b[k]||0)-sh[k]});
+  S.settles.forEach(function(s){var c=cents(s.amount);b[s.from]+=c;b[s.to]-=c});return b}
+function plan(){var b=balances(),cr=[],db=[],out=[];for(var k in b){if(b[k]>0)cr.push([k,b[k]]);else if(b[k]<0)db.push([k,-b[k]])}
+  while(cr.length&&db.length){cr.sort(function(x,y){return y[1]-x[1]});db.sort(function(x,y){return y[1]-x[1]});var c=cr[0],d=db[0],a=Math.min(c[1],d[1]);out.push({from:d[0],to:c[0],cents:a});c[1]-=a;d[1]-=a;if(!c[1])cr.shift();if(!d[1])db.shift()}return out}
+function pairCount(){var p={};function add(f,t,c){var k=f<t?f+'|'+t:t+'|'+f,s=f<t?1:-1;p[k]=(p[k]||0)+s*c}
+  S.expenses.forEach(function(e){var sh=shares(e);for(var k in sh)if(k!==e.payer)add(k,e.payer,sh[k])});
+  S.settles.forEach(function(s){add(s.to,s.from,cents(s.amount))});
+  return Object.keys(p).filter(function(k){return p[k]!==0}).length}
+function monthTotal(){var ym=iso(today0()).slice(0,7);return S.expenses.filter(function(e){return e.date.slice(0,7)===ym}).reduce(function(a,e){return a+cents(e.amount)},0)}
+function billInfo(b){var t=today0(),ym=iso(t).slice(0,7),rec=S.expenses.some(function(e){return e.bill===b.id&&e.date.slice(0,7)===ym});
+  var due=new Date(t.getFullYear(),t.getMonth()+(rec?1:0),b.day);return {rec:rec,due:due,days:Math.round((due-t)/DAY)}}
+
+/* ---------- 冰箱门便利贴 ---------- */
+function notes(){
+  var me=S.me,w=curW(),out=[],A=CH().areas;
+  A.forEach(function(a,i){
+    if(w>0&&assignee(i,w-1)===me&&!doneRec(a.id,w-1))out.push({c:'pink',mag:'#C93C55',t:'上周漏做：'+a.name,p:'补做打卡后会从公平看板的漏做记录里清除。',b:'补做打卡',act:'done:'+i+':'+(w-1)});
+    if(assignee(i,w)===me&&!doneRec(a.id,w))out.push({c:'mint',mag:'#2E6B57',t:'本周值日：'+a.name,p:'完成标准：'+a.std+'。周日 24 点前打卡。',b:'打卡完成',act:'done:'+i+':'+w});
+  });
+  S.items.forEach(function(it){if(it.stock<=it.th&&it.turn===me)out.push({mag:'#1F2D2A',t:'轮到你买'+it.name,p:'现在'+(it.stock?'只剩 '+it.stock+' '+it.unit:'已经用完了')+'。买回来点“我补货了”，花费自动 AA。',b:'我补货了',act:'buy:'+it.id})});
+  var others=S.items.filter(function(it){return it.stock<=it.th&&it.turn!==me});
+  if(others.length)out.push({mag:'#B9770E',t:'公共物品快用完了',p:others.map(function(it){return it.name+'（轮到'+M(it.turn).name+'）'}).join('、'),b:'去看看',act:'go:items'});
+  var pl=plan();
+  pl.filter(function(x){return x.from===me}).forEach(function(x){out.push({c:'pink',mag:'#C93C55',t:'你需转给'+M(x.to).name+' '+yen(x.cents),p:'已合并所有未结账单，转完记得点“已转账”。',b:'去结算',act:'go:money'})});
+  var owed=pl.filter(function(x){return x.to===me});
+  if(owed.length)out.push({c:'blue',mag:'#3B6FD4',t:'待收 '+yen(owed.reduce(function(a,x){return a+x.cents},0)),p:owed.map(function(x){return M(x.from).name+' '+yen(x.cents)}).join('，'),b:'一键催款',act:'remindpay'});
+  S.rules.filter(function(r){return r.status==='voting'&&r.agrees.indexOf(me)<0}).forEach(function(r){out.push({c:'blue',mag:'#3B6FD4',t:'新公约等你表态',p:'「'+r.text+'」'+M(r.by).name+' 提议',b:'去表态',act:'go:rules'})});
+  S.bills.forEach(function(b){var f=billInfo(b);if(!f.rec&&f.days<=7)out.push({mag:'#1F2D2A',t:b.name+(f.days<0?' 已逾期':f.days===0?' 今天到期':' '+f.days+' 天后到期'),p:yen(cents(b.amount))+' · '+M(b.payer).name+' 代缴，记账后自动分摊给大家。',b:'记入本月',act:'bill:'+b.id})});
+  var n=S.nudges[0];if(n&&Date.now()-n.at<3*DAY){var r=S.rules.filter(function(x){return x.id===n.rule})[0];if(r)out.push({mag:'#66756F',t:'有室友匿名提醒',p:'请大家注意「'+r.text+'」',b:null})}
+  return out;
+}
+var ROT=[-2.2,1.6,-0.8,2.3,-1.6,0.9,-2.5,1.3,-1.1];
+function noteHtml(n,i){return '<article class="note '+(n.c||'')+'" style="--rot:'+ROT[i%ROT.length]+'deg;--mag:'+(n.mag||'#1F2D2A')+';animation-delay:'+(i*70)+'ms"><h4>'+esc(n.t)+'</h4><p>'+esc(n.p)+'</p>'+(n.b?'<button class="nb" data-act="'+esc(n.act)+'">'+esc(n.b)+'</button>':'')+'</article>'}
+function feedRow(f){return '<div class="row">'+(f.who?av(f.who,'sm'):'<span class="av sm anon">匿</span>')+'<span class="ft">'+(f.who?'<b>'+esc(M(f.who).name)+'</b> ':'')+esc(f.text)+'</span><time>'+rel(f.at)+'</time></div>'}
+
+/* ---------- 页面 ---------- */
+function viewHome(){
+  var ns=notes(),me=S.me,b=balances()[me],w=curW(),A=CH().areas,doneN=A.filter(function(a){return doneRec(a.id,w)}).length,low=S.items.filter(function(i){return i.stock<=i.th}).length;
+  var tip=S.tipClosed?'':'<div class="tip"><span>这是一个可交互原型：试试右上角切换室友身份、在冰箱门上打卡值日、去账本记一笔账。数据保存在你的浏览器里，可随时在左下角重置。</span><button class="x" data-act="tip" aria-label="关闭提示">×</button></div>';
+  return tip+'<section class="fridge" aria-label="冰箱门"><div class="fr-head"><h2>冰箱门上贴着 '+ns.length+' 件和你有关的事</h2>'+(ns.length?'<span class="muted small">处理完会自动撕掉</span>':'')+'</div>'+
+  (ns.length?'<div class="notes">'+ns.map(noteHtml).join('')+'</div>':'<p class="empty">冰箱门很干净，这周没有需要你处理的事。</p>')+'</section>'+
+  '<div class="tri">'+
+   '<a class="card" href="#/money"><h3>我的账</h3><p class="big '+(b>0?'pos':b<0?'neg':'')+'">'+(b>0?'+':b<0?'−':'')+yen(b)+'</p><p class="muted small">'+(b>0?'室友还需要转给你的':b<0?'你还需要转出的':'已全部结清')+'</p></a>'+
+   '<a class="card" href="#/chores"><h3>本周值日 '+doneN+'/'+A.length+'</h3><ul class="mini">'+A.map(function(a,i){var d=doneRec(a.id,w);return '<li>'+av(assignee(i,w),'sm')+'<span>'+esc(a.name)+'</span><span class="tag '+(d?'ok':'')+'">'+(d?'已完成':'待完成')+'</span></li>'}).join('')+'</ul></a>'+
+   '<a class="card" href="#/items"><h3>公共物品</h3><p class="big">'+low+'<small> 件需要补货</small></p><p class="muted small">本月公共开销 '+yen(monthTotal())+'</p></a>'+
+  '</div><h2 class="sec">合租动态 <small>所有操作留痕，减少“我记得我付过”的争执</small></h2><div class="card feed">'+S.feed.slice(0,10).map(feedRow).join('')+'</div>';
+}
+
+function billRow(b){var f=billInfo(b);return '<div class="row"><div class="grow"><b>'+esc(b.name)+' '+yen(cents(b.amount))+'</b><div class="muted small">每月 '+b.day+' 日 · '+esc(M(b.payer).name)+' 代缴 · '+(b.split==='weight'?'按房间系数':'均分')+'</div></div>'+
+  (f.rec?'<span class="tag ok">本月已记账</span>':'<span class="tag '+(f.days<=3?'bad':'warn')+'">'+(f.days<0?'已逾期 '+(-f.days)+' 天':f.days===0?'今天到期':f.days+' 天后到期')+'</span><button class="btn sm" data-act="bill:'+b.id+'">记入本月</button>')+'</div>'}
+function expRow(e){var sh=shares(e),mine=sh[S.me];return '<div class="row exp"><div class="ei"><b>'+esc(e.title)+'</b><span class="tag">'+esc(e.cat)+'</span><div class="muted small">'+md(pd(e.date))+' · '+esc(M(e.payer).name)+' 付款 · '+e.parts.length+' 人'+(e.split==='weight'?'按房间系数':'均分')+(e.note?' · '+esc(e.note):'')+'</div></div><div class="ea"><b>'+yen(cents(e.amount))+'</b><div class="muted small">'+(mine!=null?'我承担 '+yen(mine):'我未参与')+'</div></div><button class="icon-btn" data-act="delexp:'+e.id+'" aria-label="删除这笔账">×</button></div>'}
+function setRow(s){return '<div class="row exp set"><div class="ei"><b>'+esc(M(s.from).name)+' 向 '+esc(M(s.to).name)+' 转账</b><span class="tag ok">结算</span><div class="muted small">'+md(pd(s.date))+' · 双方已确认</div></div><div class="ea"><b>'+yen(cents(s.amount))+'</b></div></div>'}
+
+function viewMoney(){
+  var b=balances(),pl=plan(),me=S.me,max=1,ym=iso(today0()).slice(0,7),cats={};
+  for(var k in b)max=Math.max(max,Math.abs(b[k]));
+  S.expenses.forEach(function(e){if(e.date.slice(0,7)===ym)cats[e.cat]=(cats[e.cat]||0)+cents(e.amount)});
+  var ce=Object.keys(cats).map(function(k){return [k,cats[k]]}).sort(function(x,y){return y[1]-x[1]}),cmax=ce.length?ce[0][1]:1;
+  var flow=S.expenses.map(function(e){return {k:'e',d:e.date,o:e}}).concat(S.settles.map(function(s){return {k:'s',d:s.date,o:s}})).sort(function(x,y){return y.d.localeCompare(x.d)});
+  return '<div class="bar-actions"><p class="muted">支持均分、按房间系数分摊，没参加的人可以不算在内</p><button class="btn pri" data-act="addexp">＋ 记一笔</button></div>'+
+  '<div class="grid2"><section class="card"><h3>谁垫了钱，谁该转钱</h3><div>'+S.members.map(function(m){var v=b[m.id],wd=Math.round(Math.abs(v)/max*100);
+    return '<div class="bal '+(m.id===me?'me':'')+'"><span class="bn">'+av(m.id,'sm')+esc(m.name)+'</span><div class="neg-side">'+(v<0?'<i style="width:'+wd+'%"></i>':'')+'</div><div class="pos-side">'+(v>0?'<i style="width:'+wd+'%"></i>':'')+'</div><span class="bv '+(v>0?'pos':v<0?'neg':'')+'">'+(v>0?'+':v<0?'−':'')+yen(v)+'</span></div>'}).join('')+
+  '</div><p class="muted small">绿色向右 = 多垫付了，等别人转给 TA；红色向左 = 还需要转出。</p></section>'+
+  '<section class="card"><h3>最省事的结算方案</h3>'+(pl.length?'<p class="muted small">'+pairCount()+' 段两两之间的欠款，合并成 '+pl.length+' 次转账就能清账。</p><ul class="plan">'+pl.map(function(x){return '<li class="'+(x.from===me||x.to===me?'mine':'')+'">'+av(x.from,'sm')+'<span>'+esc(M(x.from).name)+' → '+esc(M(x.to).name)+'</span><b>'+yen(x.cents)+'</b><button class="btn sm" data-act="settle:'+x.from+':'+x.to+':'+x.cents+'">已转账</button></li>'}).join('')+'</ul>':'<p class="empty">所有账目都已结清。</p>')+'</section></div>'+
+  '<div class="grid2"><section class="card"><h3>固定账单</h3>'+S.bills.map(billRow).join('')+'<p class="weights">房间系数：'+S.members.map(function(m){return esc(m.name)+' '+m.weight.toFixed(1)}).join(' / ')+'（按面积和采光协商）</p></section>'+
+  '<section class="card"><h3>'+(today0().getMonth()+1)+' 月开销构成</h3>'+(ce.length?ce.map(function(c){return '<div class="cat"><span>'+esc(c[0])+'</span><div class="track"><i style="width:'+Math.max(2,Math.round(c[1]/cmax*100))+'%"></i></div><b>'+yen(c[1])+'</b></div>'}).join(''):'<p class="empty">本月还没有账单。</p>')+'</section></div>'+
+  '<h2 class="sec">账单流水 <small>每一笔都写清谁付的、谁参与、怎么分</small></h2><div class="card">'+(flow.length?flow.map(function(f){return f.k==='e'?expRow(f.o):setRow(f.o)}).join(''):'<p class="empty">还没有记账，点“记一笔”开始。</p>')+'</div>';
+}
+
+function fair(w){var A=CH().areas,st={};S.members.forEach(function(m){st[m.id]={as:0,dn:0,help:0}});
+  for(var k=0;k<w;k++)A.forEach(function(a,i){var who=assignee(i,k),d=doneRec(a.id,k);if(!st[who])return;st[who].as++;if(d){if(d.by===who)st[who].dn++;else if(st[d.by])st[d.by].help++}});
+  return S.members.map(function(m){var s=st[m.id],r=s.as?Math.round(s.dn/s.as*100):100;return '<div class="fair"><span class="bn">'+av(m.id,'sm')+esc(m.name)+'</span><div class="track"><i class="'+(r<85?'low':'')+'" style="width:'+r+'%"></i></div><b>'+r+'%</b><span class="muted small">'+s.dn+'/'+s.as+(s.help?' · 帮做 '+s.help:'')+'</span></div>'}).join('')+'<p class="muted small">按时完成率 = 自己完成的次数 ÷ 被排到的次数，帮别人做的单独记一笔。</p>'}
+
+function viewChores(){
+  var w=curW(),A=CH().areas,me=S.me;
+  var cards=A.map(function(a,i){var who=assignee(i,w),d=doneRec(a.id,w);
+    return '<article class="card chore '+(d?'done':'')+'"><div class="ch-top">'+av(who,who===me?'me':'')+'<div><h3>'+esc(a.name)+'</h3><p class="muted small">'+esc(M(who).name)+(who===me?'（我）':'')+'</p></div><span class="tag '+(d?'ok':'warn')+'">'+(d?'已完成':'待完成')+'</span></div>'+
+    '<p class="std">完成标准：'+esc(a.std)+'</p>'+
+    (d?'<p class="muted small">'+esc(M(d.by).name)+(d.by!==who?' 代做':'')+' · '+rel(d.at)+'打卡</p>':'<div class="acts">'+(who===me?'<button class="btn pri sm" data-act="done:'+i+':'+w+'">打卡完成</button><button class="btn sm" data-act="swap:'+i+'">找人换班</button>':'<button class="btn sm" data-act="done:'+i+':'+w+'">我帮 TA 做了</button>')+'</div>')+'</article>'}).join('');
+  var missed=[];if(w>0)A.forEach(function(a,i){if(!doneRec(a.id,w-1))missed.push({a:a,i:i,who:assignee(i,w-1)})});
+  var weeks=[w,w+1,w+2,w+3];
+  return '<p class="rule-line">每周一自动轮换 · '+A.length+' 个区域 × '+S.members.length+' 人 · 每人每周负责一项，临时有事可以换班</p><div class="chores">'+cards+'</div>'+
+  (missed.length?'<h2 class="sec">上周漏做 <small>补做或代做后自动清除；提醒只发给本人，不在群里点名</small></h2><div class="card">'+missed.map(function(x){return '<div class="row">'+av(x.who,'sm')+'<span class="grow"><b>'+esc(M(x.who).name)+'</b> 的「'+esc(x.a.name)+'」还没打卡</span><button class="btn sm" data-act="done:'+x.i+':'+(w-1)+'">'+(x.who===me?'补做打卡':'我来代做')+'</button>'+(x.who!==me?'<button class="btn sm ghost" data-act="nudgechore:'+x.who+':'+x.i+'">私下提醒</button>':'')+'</div>'}).join('')+'</div>':'')+
+  '<div class="grid2" style="margin-top:16px"><section class="card"><h3>未来 4 周排班</h3><div class="scroll"><table class="sched"><thead><tr><th>周一</th>'+A.map(function(a){return '<th>'+esc(a.name)+'</th>'}).join('')+'</tr></thead><tbody>'+
+  weeks.map(function(fw){return '<tr class="'+(fw===w?'now':'')+'"><td>'+md(weekStart(fw))+(fw===w?' · 本周':'')+'</td>'+A.map(function(a,i){var who=assignee(i,fw);return '<td class="'+(who===me?'mine':'')+'">'+av(who,'sm')+esc(M(who).name)+'</td>'}).join('')+'</tr>'}).join('')+
+  '</tbody></table></div><p class="muted small">绿色格子是你负责的。</p></section><section class="card"><h3>公平看板 <span class="muted small">近 '+w+' 周</span></h3>'+fair(w)+'</section></div>';
+}
+
+function viewItems(){var me=S.me;
+  return '<div class="bar-actions"><p class="muted">低于提醒线自动贴上冰箱门 · 大家轮流买 · 补货花费一键 AA</p><button class="btn pri" data-act="additem">＋ 登记物品</button></div><div class="items">'+
+  S.items.map(function(it){var s=itemStatus(it),pct=Math.min(100,Math.round(it.stock/Math.max(it.th*2,1)*100)),low=s[1]!=='ok';
+    return '<article class="card item '+s[1]+'"><div class="it-top"><h3>'+esc(it.name)+'</h3><span class="tag '+s[1]+'">'+s[0]+'</span></div>'+
+    '<p class="stock"><b>'+it.stock+'</b> '+esc(it.unit)+' <span class="muted small">· 提醒线 '+it.th+' '+esc(it.unit)+'</span></p><div class="track"><i style="width:'+Math.max(pct,it.stock?4:0)+'%"></i></div>'+
+    '<p class="small turn">'+av(it.turn,'sm')+'下次轮到 <b>'+esc(M(it.turn).name)+(it.turn===me?'（我）':'')+'</b> 买</p>'+
+    '<p class="muted small">'+(it.lastBy?'上次 '+esc(M(it.lastBy).name)+' '+md(pd(it.lastAt))+' 补货':'还没有补货记录')+'</p>'+
+    '<div class="acts"><button class="btn sm" data-act="use:'+it.id+'"'+(it.stock?'':' disabled')+'>用掉一个</button><button class="btn sm '+(it.turn===me&&low?'pri':'')+'" data-act="buy:'+it.id+'">我补货了</button>'+(it.turn!==me&&low?'<button class="btn sm ghost" data-act="nudgebuy:'+it.id+'">提醒 TA</button>':'')+'</div></article>'}).join('')+'</div>';
+}
+
+function sigs(r){return '<div class="sigs">'+S.members.map(function(m){return '<span class="sig '+(r.agrees.indexOf(m.id)>=0?'on':'')+'">'+av(m.id,'sm')+'</span>'}).join('')+'</div>'}
+function viewRules(){var me=S.me,N=S.members.length,V=S.rules.filter(function(r){return r.status==='voting'}),A=S.rules.filter(function(r){return r.status==='active'}),cats=[];
+  A.forEach(function(r){if(cats.indexOf(r.cat)<0)cats.push(r.cat)});
+  return '<div class="bar-actions"><p class="muted">全员同意才生效 · 生效后任何人都可以匿名提醒 · 修改同样需要表决</p><button class="btn pri" data-act="propose">＋ 提议新公约</button></div>'+
+  (V.length?'<h2 class="sec" style="margin-top:6px">表决中</h2><div class="votes">'+V.map(function(r){var ok=r.agrees.indexOf(me)>=0;return '<article class="card vote"><span class="tag">'+esc(r.cat)+'</span><p class="rtext">'+esc(r.text)+'</p><p class="muted small">'+esc(M(r.by).name)+' 提议 · '+r.agrees.length+'/'+N+' 已同意，全员同意后生效</p>'+sigs(r)+'<div class="acts">'+(ok?'<span class="tag ok">你已同意</span>':'<button class="btn pri sm" data-act="agree:'+r.id+'">同意</button><button class="btn sm" data-act="object:'+r.id+'">我有修改意见</button>')+'</div></article>'}).join('')+'</div>':'')+
+  '<h2 class="sec">生效中的公约 <small>'+A.length+' 条，每条都有全员签名</small></h2><div class="card">'+cats.map(function(c){return '<div class="rcat"><h4>'+esc(c)+'</h4>'+A.filter(function(r){return r.cat===c}).map(function(r){return '<div class="row rule"><p class="rtext grow">'+esc(r.text)+'</p>'+sigs(r)+'<button class="btn sm ghost" data-act="nudge:'+r.id+'">匿名提醒</button></div>'}).join('')+'</div>'}).join('')+'</div>'+
+  (S.nudges.length?'<h2 class="sec">最近的匿名提醒 <small>对事不对人，不显示是谁发的</small></h2><div class="card">'+S.nudges.slice(0,5).map(function(n){var r=S.rules.filter(function(x){return x.id===n.rule})[0];return r?'<div class="row"><span class="av sm anon">匿</span><span class="grow">有室友提醒大家注意「'+esc(r.text)+'」</span><time class="muted small">'+rel(n.at)+'</time></div>':''}).join('')+'</div>':'');
+}
+
+function greet(){var h=new Date().getHours();return (h<11?'早上好':h<13?'中午好':h<18?'下午好':'晚上好')+'，'+M(S.me).name}
+var ROUTES={
+  home:{t:'冰箱门',h:greet,sub:function(){var t=today0();return md(t)+' 星期'+WK[t.getDay()]+' · '+S.house.name},view:viewHome},
+  money:{t:'账本',h:function(){return '账本'},sub:function(){return '房租水电、聚餐日用，自动 AA 并给出最少转账方案'},view:viewMoney},
+  chores:{t:'值日',h:function(){return '清洁值日'},sub:function(){var ws=weekStart(curW());return '本周 '+md(ws)+' – '+md(addDays(ws,6))},view:viewChores},
+  items:{t:'公共物品',h:function(){return '公共物品'},sub:function(){return '谁用完了、该谁买、花了多少，一目了然'},view:viewItems},
+  rules:{t:'室友公约',h:function(){return '室友公约'},sub:function(){return '把口头约定变成大家都签过字的规则'},view:viewRules}
+};
+function route(){var r=location.hash.replace(/^#\/?/,'');return ROUTES[r]?r:'home'}
+function render(){
+  var r=route(),R=ROUTES[r];
+  $$('nav a').forEach(function(a){a.classList.toggle('on',a.getAttribute('data-r')===r);if(a.getAttribute('data-r')===r)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+  $('#main').innerHTML='<header class="top"><div><h1>'+esc(R.h())+'</h1><p class="sub">'+esc(R.sub())+'</p></div><div class="who"><label for="meSel">当前身份</label><select id="meSel">'+S.members.map(function(m){return '<option value="'+m.id+'"'+(m.id===S.me?' selected':'')+'>'+esc(m.name)+'</option>'}).join('')+'</select><button class="lnk" data-act="about">设计说明</button></div></header>'+R.view();
+  $('#house').innerHTML='<h2>'+esc(S.house.name)+'</h2><p>'+esc(S.house.meta)+'</p><div class="avs">'+S.members.map(function(m){return av(m.id,m.id===S.me?'me':'')}).join('')+'</div>';
+  var me=S.me,w=curW(),A=CH().areas;
+  var bd={home:notes().length,money:plan().filter(function(x){return x.from===me}).length,chores:A.filter(function(a,i){return assignee(i,w)===me&&!doneRec(a.id,w)}).length,items:S.items.filter(function(i){return i.stock<=i.th&&i.turn===me}).length,rules:S.rules.filter(function(x){return x.status==='voting'&&x.agrees.indexOf(me)<0}).length};
+  for(var k in bd){var el=$('#bd-'+k);if(el)el.textContent=bd[k]||''}
+  document.title=(r==='home'?'':R.t+' · ')+'合租生活管家';
+}
+
+/* ---------- 弹窗 ---------- */
+function closeModal(){$$('.mask').forEach(function(x){x.remove()})}
+function modal(title,body,onOk,okLabel,onMount,cancelLabel){
+  closeModal();var w=document.createElement('div');w.className='mask';
+  w.innerHTML='<div class="modal" role="dialog" aria-modal="true" aria-label="'+esc(title)+'"><h3>'+esc(title)+'</h3>'+body+'<div class="acts"><button class="btn" data-act="close">'+esc(cancelLabel||'取消')+'</button>'+(onOk?'<button class="btn pri" data-ok>'+esc(okLabel||'确定')+'</button>':'')+'</div></div>';
+  document.body.appendChild(w);var m=$('.modal',w);
+  w.addEventListener('mousedown',function(e){if(e.target===w)closeModal()});
+  if(onOk)$('[data-ok]',w).addEventListener('click',function(){if(onOk(m)!==false)closeModal()});
+  if(onMount)onMount(m);var f=$('input:not([type=radio]):not([type=checkbox]),textarea',m);if(f)f.focus();
+}
+function memberOpts(sel){return S.members.map(function(m){return '<option value="'+m.id+'"'+(m.id===sel?' selected':'')+'>'+esc(m.name)+'</option>'}).join('')}
+
+function openExp(){
+  var cats=['房租','水电燃气','网费','日用品','聚餐','其他'];
+  modal('记一笔公共开销',
+   '<label class="f" for="xTitle">花在哪</label><input class="in" id="xTitle" placeholder="例如：周末火锅" maxlength="30">'+
+   '<div class="two"><div><label class="f" for="xAmt">金额（元）</label><input class="in" id="xAmt" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div><div><label class="f" for="xCat">分类</label><select class="in" id="xCat">'+cats.map(function(c){return '<option>'+c+'</option>'}).join('')+'</select></div></div>'+
+   '<div class="two"><div><label class="f" for="xPayer">谁付的钱</label><select class="in" id="xPayer">'+memberOpts(S.me)+'</select></div><div><label class="f" for="xDate">日期</label><input class="in" id="xDate" type="date" value="'+iso(today0())+'"></div></div>'+
+   '<label class="f">怎么分</label><div class="seg"><label class="chk"><input type="radio" name="xSplit" value="equal" checked> 均分</label><label class="chk"><input type="radio" name="xSplit" value="weight"> 按房间系数（适合房租）</label></div>'+
+   '<label class="f">谁参与（没参加的取消勾选）</label><div class="seg">'+S.members.map(function(m){return '<label class="chk"><input type="checkbox" name="xPart" value="'+m.id+'" checked> '+esc(m.name)+'</label>'}).join('')+'</div><div class="preview" id="xPrev"></div>',
+   function(m){
+     var e=readExp(m);if(!e.title){toast('写一下花在哪');return false}if(!(e.amount>0)){toast('请填写金额');return false}if(!e.parts.length){toast('至少选一位参与人');return false}
+     e.id=uid();S.expenses.push(e);addFeed(S.me,'记了一笔「'+e.title+'」'+yen(cents(e.amount))+'，'+e.parts.length+' 人'+(e.split==='weight'?'按房间系数':'均分'));save();render();toast('已记入账本，所有人的余额已更新');
+   },'记入账本',
+   function(m){function up(ev){if(ev&&ev.target.id==='xCat'&&ev.target.value==='房租'){$('input[name=xSplit][value=weight]',m).checked=true}
+     var e=readExp(m),pv=$('#xPrev',m);if(!(e.amount>0)||!e.parts.length){pv.innerHTML='<span class="muted">填好金额后，这里会显示每个人要承担多少。</span>';return}
+     var sh=shares(e);pv.innerHTML=e.parts.map(function(id){return '<div><span>'+esc(M(id).name)+(id===e.payer?'（付款人）':'')+'</span><b>'+yen(sh[id])+'</b></div>'}).join('')}
+     m.addEventListener('input',up);m.addEventListener('change',up);up()});
+}
+function readExp(m){return {title:$('#xTitle',m).value.trim(),amount:Math.round(parseFloat($('#xAmt',m).value)*100)/100,cat:$('#xCat',m).value,payer:$('#xPayer',m).value,date:$('#xDate',m).value||iso(today0()),split:$('input[name=xSplit]:checked',m).value,parts:$$('input[name=xPart]:checked',m).map(function(x){return x.value})}}
+
+function openSwap(i){
+  var w=curW(),A=CH().areas,mine=assignee(i,w);
+  var opts=S.members.filter(function(m){return m.id!==mine}).map(function(m){var j=-1;A.forEach(function(a,k){if(assignee(k,w)===m.id)j=k});return {m:m,j:j}});
+  modal('找人换班','<p class="muted">你本周负责「'+esc(A[i].name)+'」。选一位室友互换本周任务，对方确认后排班自动更新（原型中直接生效）。</p>'+
+   opts.map(function(o){return '<label class="chk block"><input type="radio" name="sw" value="'+o.m.id+'"> '+av(o.m.id,'sm')+' '+esc(o.m.name)+' <span class="muted small">本周负责：'+(o.j>=0?esc(A[o.j].name):'无')+'</span></label>'}).join('')+
+   '<label class="f" for="swMsg">给 TA 留言（可选）</label><input class="in" id="swMsg" placeholder="例如：周末出差，下周我多倒一次垃圾" maxlength="40">',
+   function(m){var v=$('input[name=sw]:checked',m);if(!v){toast('先选一位室友');return false}
+     var to=v.value,msg=$('#swMsg',m).value.trim(),j=-1;A.forEach(function(a,k){if(assignee(k,w)===to)j=k});
+     CH().swaps.push({w:w,a:A[i].id,to:to});if(j>=0)CH().swaps.push({w:w,a:A[j].id,to:mine});
+     addFeed(mine,'和 '+M(to).name+' 换了本周值日：'+A[i].name+(j>=0?' ⇄ '+A[j].name:'')+(msg?'（'+msg+'）':''));save();render();toast('换班成功，排班已更新');
+   },'确认换班');
+}
+function openBuy(id){
+  var it=S.items.filter(function(x){return x.id===id})[0];if(!it)return;
+  modal('补货：'+it.name,'<div class="two"><div><label class="f" for="bQty">买了多少（'+esc(it.unit)+'）</label><input class="in" id="bQty" type="number" min="1" step="1" value="'+Math.max(it.th*2,2)+'"></div><div><label class="f" for="bAmt">花了多少钱（元）</label><input class="in" id="bAmt" type="number" min="0" step="0.01" value="'+(it.price||'')+'"></div></div>'+
+   '<label class="chk block"><input type="checkbox" id="bAA" checked> 记入账本，全屋 '+S.members.length+' 人均分</label><p class="muted small">补货后，下次轮到 '+esc(M(nextOf(S.me)).name)+' 买。</p>',
+   function(m){var q=parseInt($('#bQty',m).value,10),a=parseFloat($('#bAmt',m).value),aa=$('#bAA',m).checked;
+     if(!(q>0)){toast('请填写数量');return false}if(aa&&!(a>0)){toast('请填写金额，或取消记账');return false}
+     it.stock+=q;it.lastBy=S.me;it.lastAt=iso(today0());it.turn=nextOf(S.me);if(a>0)it.price=Math.round(a*100)/100;
+     if(aa)S.expenses.push({id:uid(),title:'补货 · '+it.name,amount:Math.round(a*100)/100,payer:S.me,cat:'日用品',date:iso(today0()),split:'equal',parts:S.members.map(function(x){return x.id})});
+     addFeed(S.me,'补货了'+it.name+' ×'+q+(aa?'，'+yen(cents(a))+' 已记入账本':''));save();render();toast('已补货'+(aa?'，花费已自动 AA':''));
+   },'确认补货');
+}
+function openItem(){
+  modal('登记公共物品','<div class="two"><div><label class="f" for="iName">物品名称</label><input class="in" id="iName" placeholder="例如：洗手液" maxlength="16"></div><div><label class="f" for="iUnit">单位</label><input class="in" id="iUnit" value="瓶" maxlength="4"></div></div>'+
+   '<div class="two"><div><label class="f" for="iStock">现有库存</label><input class="in" id="iStock" type="number" min="0" value="2"></div><div><label class="f" for="iTh">低于多少提醒</label><input class="in" id="iTh" type="number" min="0" value="1"></div></div>'+
+   '<label class="f" for="iTurn">第一个负责买的人</label><select class="in" id="iTurn">'+memberOpts(S.me)+'</select>',
+   function(m){var n=$('#iName',m).value.trim();if(!n){toast('写一下物品名称');return false}
+     S.items.push({id:uid(),name:n,unit:$('#iUnit',m).value.trim()||'个',stock:Math.max(0,parseInt($('#iStock',m).value,10)||0),th:Math.max(0,parseInt($('#iTh',m).value,10)||0),turn:$('#iTurn',m).value,lastBy:null,lastAt:null,price:0});
+     addFeed(S.me,'登记了公共物品「'+n+'」');save();render();toast('已登记，库存低于提醒线会自动提醒');
+   },'登记');
+}
+var TPL=['晚上 23:00 后洗衣机、吹风机暂停使用','快递超过 3 天未取，代收人可放到门口','个人物品不在公共区域放超过 24 小时','养宠物前需要全员同意','在家聚会提前 2 天告知，结束后负责打扫'];
+function openPropose(){
+  var cats=['作息','卫生','访客','费用','公共物品','冰箱','公共区域','其他'];
+  modal('提议新公约','<label class="f" for="pCat">分类</label><select class="in" id="pCat">'+cats.map(function(c){return '<option>'+c+'</option>'}).join('')+'</select>'+
+   '<label class="f" for="pText">公约内容（写具体的时间、数量，越具体越好执行）</label><textarea class="in" id="pText" maxlength="60" placeholder="例如：晚上 23:00 后洗衣机暂停使用"></textarea>'+
+   '<p class="muted small" style="margin-top:10px">常见公约，点一下直接用：</p><div class="chips">'+TPL.map(function(t,i){return '<button class="chip" type="button" data-act="tpl:'+i+'">'+esc(t)+'</button>'}).join('')+'</div>',
+   function(m){var t=$('#pText',m).value.trim();if(!t){toast('写一下公约内容');return false}
+     S.rules.push({id:uid(),cat:$('#pCat',m).value,text:t,status:'voting',by:S.me,agrees:[S.me]});addFeed(S.me,'提议新公约「'+t+'」');save();render();toast('已发起表决，全员同意后生效');
+   },'发起表决');
+}
+function openObject(id){var r=S.rules.filter(function(x){return x.id===id})[0];if(!r)return;
+  modal('对这条提议提意见','<p>「'+esc(r.text)+'」</p><label class="f" for="oText">你希望怎么改</label><textarea class="in" id="oText" maxlength="60" placeholder="例如：改成按使用天数分摊"></textarea>',
+   function(m){var t=$('#oText',m).value.trim();if(!t){toast('写一下你的意见');return false}addFeed(S.me,'对公约提议「'+r.text+'」提出修改意见：'+t);save();render();toast('意见已发给提议人 '+M(r.by).name)},'发送意见');}
+function openAbout(){
+  var rows=[
+    ['房租按房间大小不同，聚餐有人没去','按房间系数分摊 + 勾选参与人，提交前预览每人承担金额'],
+    ['互相垫付多了，账越算越乱','自动把所有欠款合并成最少的转账次数，一键标记已结清'],
+    ['房租、宽带这类固定账单总有人忘','固定账单到期前贴上冰箱门，一键记入本月'],
+    ['值日轮到谁说不清，打扫标准不一','每周一自动轮换，每个区域写明完成标准，完成即打卡'],
+    ['临时出差、加班没法打扫','一键换班，排班自动调整，留言说明原因'],
+    ['“总是我在干活”的不公平感','公平看板：完成率与帮做次数，用数据代替争吵'],
+    ['卫生纸用完了没人买，买了也不好意思要钱','库存提醒线 + 轮流购买，补货时直接记账 AA'],
+    ['口头约定没人记得，执行起来没依据','公约需全员签名生效，修改同样要表决'],
+    ['有意见不好意思当面说','匿名提醒只展示公约内容，漏做值日只私下提醒本人'],
+    ['事情分散在群聊里，很快被刷掉','“冰箱门”首页只聚合和我有关、需要我处理的事']
+  ];
+  modal('设计说明','<div class="about"><p>年轻人合租的矛盾，大多不是因为钱多钱少，而是<b>信息不透明</b>和<b>不好意思开口</b>。这个原型围绕这两点，把四件事放进同一个“家”：</p><table>'+rows.map(function(r){return '<tr><td>'+esc(r[0])+'</td><td>'+esc(r[1])+'</td></tr>'}).join('')+'</table><p class="muted small" style="margin-top:12px">原型说明：右上角可切换 4 位室友的视角查看各自的待办；数据保存在当前浏览器，左下角可重置演示数据。后续可接入账号体系和多端同步、微信消息提醒、OCR 识别水电账单。</p></div>',null,null,null,'知道了');
+}
+
+/* ---------- 交互 ---------- */
+function act(s,el){
+  var p=s.split(':'),k=p[0],me=S.me,A=CH().areas;
+  if(k==='close'){closeModal();return}
+  if(k==='go'){location.hash='#/'+p[1];return}
+  if(k==='tip'){S.tipClosed=true;save();render();return}
+  if(k==='about'){openAbout();return}
+  if(k==='reset'){if(confirm('重置为演示数据？你做的改动会被清除。')){S=seed();save();render();toast('已重置演示数据')}return}
+  if(k==='addexp'){openExp();return}
+  if(k==='additem'){openItem();return}
+  if(k==='propose'){openPropose();return}
+  if(k==='swap'){openSwap(+p[1]);return}
+  if(k==='buy'){openBuy(p[1]);return}
+  if(k==='object'){openObject(p[1]);return}
+  if(k==='tpl'){var ta=$('#pText');if(ta){ta.value=TPL[+p[1]];ta.focus()}return}
+  if(k==='done'){var i=+p[1],w=+p[2],a=A[i];if(!a||doneRec(a.id,w))return;var who=assignee(i,w);
+    CH().log.push({a:a.id,w:w,by:me,at:Date.now()});addFeed(me,who===me?'完成了「'+a.name+'」值日打卡':'帮 '+M(who).name+' 完成了「'+a.name+'」');save();render();toast(who===me?'打卡成功，辛苦了':'已记为代做，谢谢你帮忙');return}
+  if(k==='nudgechore'){toast('已私下提醒 '+M(p[1]).name+'：「'+A[+p[2]].name+'」还没打卡');return}
+  if(k==='use'){var it=S.items.filter(function(x){return x.id===p[1]})[0];if(!it||it.stock<=0)return;it.stock--;
+    if(it.stock<=it.th){addFeed(me,'用掉了一'+it.unit+it.name+'，还剩 '+it.stock+' '+it.unit+'，已提醒 '+M(it.turn).name+' 补货');toast('库存已低于提醒线，已提醒 '+M(it.turn).name+' 去买')}else toast('已记录，还剩 '+it.stock+' '+it.unit);
+    save();render();return}
+  if(k==='nudgebuy'){var it2=S.items.filter(function(x){return x.id===p[1]})[0];if(!it2)return;addFeed(me,'提醒 '+M(it2.turn).name+' 补货'+it2.name);save();render();toast('已提醒 '+M(it2.turn).name+' 买'+it2.name);return}
+  if(k==='settle'){var c=parseInt(p[3],10);S.settles.push({id:uid(),from:p[1],to:p[2],amount:c/100,date:iso(today0())});addFeed(p[1],'向 '+M(p[2]).name+' 转账 '+yen(c)+'，已结清');save();render();toast('已结清 '+yen(c));return}
+  if(k==='delexp'){var e=S.expenses.filter(function(x){return x.id===p[1]})[0];if(!e)return;if(!confirm('删除「'+e.title+'」？所有人的余额会重新计算。'))return;S.expenses=S.expenses.filter(function(x){return x.id!==e.id});addFeed(me,'删除了账单「'+e.title+'」');save();render();toast('已删除');return}
+  if(k==='bill'){var b=S.bills.filter(function(x){return x.id===p[1]})[0];if(!b)return;var t=today0(),d=new Date(t.getFullYear(),t.getMonth(),b.day);if(d>t)d=t;
+    S.expenses.push({id:uid(),bill:b.id,title:b.name+' · '+(t.getMonth()+1)+'月',amount:b.amount,payer:b.payer,cat:b.cat,date:iso(d),split:b.split,parts:S.members.map(function(x){return x.id})});
+    addFeed(me,'把「'+b.name+' · '+(t.getMonth()+1)+'月」'+yen(cents(b.amount))+' 记入账本');save();render();toast(b.name+'已记账并分摊');return}
+  if(k==='remindpay'){addFeed(me,'发起了结算提醒，请大家查看账本');save();render();toast('已向需要转账的室友发送结算提醒');return}
+  if(k==='agree'){var r=S.rules.filter(function(x){return x.id===p[1]})[0];if(!r||r.agrees.indexOf(me)>=0)return;r.agrees.push(me);
+    if(r.agrees.length>=S.members.length){r.status='active';addFeed(me,'签署了公约，「'+r.text+'」全员通过，正式生效');toast('全员同意，公约正式生效')}else{addFeed(me,'同意了公约提议「'+r.text+'」');toast('已同意，还差 '+(S.members.length-r.agrees.length)+' 人')}
+    save();render();return}
+  if(k==='nudge'){var r2=S.rules.filter(function(x){return x.id===p[1]})[0];if(!r2)return;S.nudges.unshift({id:uid(),rule:r2.id,at:Date.now()});addFeed(null,'有室友匿名提醒大家注意「'+r2.text+'」');save();render();toast('已匿名发送：大家只会看到公约内容，看不到是谁');return}
+}
+document.addEventListener('click',function(e){var el=e.target.closest('[data-act]');if(!el)return;e.preventDefault();act(el.getAttribute('data-act'),el)});
+document.addEventListener('change',function(e){if(e.target&&e.target.id==='meSel'){S.me=e.target.value;save();render();toast('已切换到 '+M(S.me).name+' 的视角')}});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal()});
+window.addEventListener('hashchange',function(){render();window.scrollTo(0,0)});
+
+load();document.body.classList.add('intro');render();setTimeout(function(){document.body.classList.remove('intro')},1400);
+})();
+</script>
+</body>
+</html>
